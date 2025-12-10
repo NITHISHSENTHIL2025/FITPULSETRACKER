@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-
 // [CO5] Inheritance: Extending JFrame to create the main application window
 public class FitnessTrackerApp extends JFrame {
 
@@ -167,7 +166,7 @@ public class FitnessTrackerApp extends JFrame {
         repaint();
     }
 
-    // [CO1] Switch Case logic for navigation control flow
+
     private void navigateTo(String panelName) {
         cardLayout.show(mainPanel, panelName);
         switch (panelName) {
@@ -230,6 +229,7 @@ public class FitnessTrackerApp extends JFrame {
         centerPanel.add(Box.createVerticalStrut(10));
         centerPanel.add(msgArea);
 
+        // Uses Overloaded Constructor (if we added it) or standard
         ModernButton closeBtn = new ModernButton("Let's Go!", ACCENT_COLOR, ACCENT_HOVER);
         closeBtn.setPreferredSize(new Dimension(100, 40));
         closeBtn.addActionListener(e -> dialog.dispose());
@@ -254,13 +254,26 @@ public class FitnessTrackerApp extends JFrame {
         private Color normalColor;
         private Color hoverColor;
 
+        // [CO5] Method Overloading: Constructor 1 (Standard)
         public ModernButton(String text, Color normal, Color hover) {
             super(text);
             this.normalColor = normal;
             this.hoverColor = hover;
-            setBackground(normal);
+            initButton();
+        }
+
+        // [CO5] Method Overloading: Constructor 2 (Simplified, uses default blue)
+        public ModernButton(String text) {
+            super(text);
+            this.normalColor = new Color(52, 152, 219); // Default Blue
+            this.hoverColor = new Color(41, 128, 185);
+            initButton();
+        }
+
+        private void initButton() {
+            setBackground(normalColor);
             setForeground(Color.WHITE);
-            setFont(FONT_BOLD);
+            setFont(new Font("Segoe UI", Font.BOLD, 14));
             setFocusPainted(false);
             setBorderPainted(false);
             setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -341,28 +354,23 @@ public class FitnessTrackerApp extends JFrame {
         }
 
         // [CO2] Algorithm: Sorting logic using 1D Arrays (Bubble Sort)
-        // This method processes data to find the max duration, demonstrating algorithmic thinking.
         public static int getLongestWorkoutDuration(ArrayList<Integer> durationsList) {
-            // Convert Collection to Primitive 1D Array [CO2]
             int[] arr = new int[durationsList.size()];
             for (int i = 0; i < durationsList.size(); i++) {
                 arr[i] = durationsList.get(i);
             }
 
-            // Implement Bubble Sort Algorithm [CO2]
             int n = arr.length;
             if (n == 0) return 0;
             for (int i = 0; i < n - 1; i++) {
                 for (int j = 0; j < n - i - 1; j++) {
                     if (arr[j] > arr[j + 1]) {
-                        // Swap
                         int temp = arr[j];
                         arr[j] = arr[j + 1];
                         arr[j + 1] = temp;
                     }
                 }
             }
-            // Return last element (max value after sort)
             return arr[n - 1];
         }
 
@@ -426,8 +434,8 @@ public class FitnessTrackerApp extends JFrame {
             } catch (SQLException e) { e.printStackTrace(); }
         }
 
+        // [CO5] Method Overloading 1: Full Parameters
         public void logWorkout(int uid, String t, int s, String d) {
-            // [CO6] Handling Dates securely
             String dateNow = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
             try (Connection c = connect(); PreparedStatement ps = c.prepareStatement("INSERT INTO workouts(user_id, date, exercise_type, duration_seconds, details) VALUES(?, ?, ?, ?, ?)")) {
                 ps.setInt(1, uid);
@@ -437,6 +445,11 @@ public class FitnessTrackerApp extends JFrame {
                 ps.setString(5, d);
                 ps.executeUpdate();
             } catch (SQLException e) { e.printStackTrace(); }
+        }
+
+        // [CO5] Method Overloading 2: Simplified (Auto-generates details)
+        public void logWorkout(int uid, String t, int s) {
+            logWorkout(uid, t, s, "Quick Log - No Details Provided");
         }
 
         public void logMeal(int uid, String f, double p, double cals) {
@@ -463,7 +476,6 @@ public class FitnessTrackerApp extends JFrame {
             } catch (SQLException e) { e.printStackTrace(); } return 0.0;
         }
 
-        // [CO6] Using Collections (ArrayList) to retrieve data
         public ArrayList<Object[]> getTodayMealsRaw(int uid) {
             ArrayList<Object[]> list = new ArrayList<>();
             try (Connection c = connect(); PreparedStatement ps = c.prepareStatement("SELECT id, food_name, protein, calories FROM meals WHERE user_id=? AND date=date('now','localtime')")) {
@@ -490,7 +502,6 @@ public class FitnessTrackerApp extends JFrame {
             return list;
         }
 
-        // Helper to get raw duration integers for CO2 algorithm sorting
         public ArrayList<Integer> getWorkoutDurations(int uid) {
             ArrayList<Integer> list = new ArrayList<>();
             try (Connection c = connect(); PreparedStatement ps = c.prepareStatement("SELECT duration_seconds FROM workouts WHERE user_id=?")) {
